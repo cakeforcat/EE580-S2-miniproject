@@ -21,7 +21,7 @@ void main(void){
 void audioHWI(void){
     int16_t s16;
     s16 = read_audio_sample();
-    printf("%d\n",s16);
+    //printf("%d\n",s16);
 
     //printf("test2\n");
     DIP_get(DIP_1,&dip_1);

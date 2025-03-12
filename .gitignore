@@ -5,8 +5,9 @@
 /dvt/
 *.jxbrowser.userdata/
 *.project*
-#*.settings*
+*.settings*
 *.cproject*
 *.ccsproject*
 *.xdchelp*
 *.launches*
+*targetConfigs*
