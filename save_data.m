@@ -1,4 +1,4 @@
-function save_data(name,a,b)
+function save_data(name,b,a)
     filename = strcat('MiniProject/IIR_coeffs/',name,'.h');
     fid = fopen(filename,'w');
     
