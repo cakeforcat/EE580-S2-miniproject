@@ -75,6 +75,11 @@ bios.LOG_system.bufLen = 512;
 bios.HWI.instance("HWI_INT5").interruptSelectNumber = 61;
 bios.HWI.instance("HWI_INT5").fxn = prog.extern("audioHWI");
 bios.HWI.instance("HWI_INT5").useDispatcher = 1;
+bios.PRD.create("PRD0");
+bios.PRD.instance("PRD0").order = 1;
+bios.PRD.instance("PRD0").period = 50;
+bios.PRD.instance("PRD0").fxn = prog.extern("LED");
+bios.PRD.instance("PRD0").period = 5000;
 // !GRAPHICAL_CONFIG_TOOL_SCRIPT_INSERT_POINT!
 
 if (config.hasReportedError == false) {

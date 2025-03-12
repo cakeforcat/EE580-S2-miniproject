@@ -2,8 +2,14 @@
 #include "Maincfg.h"
 #include "framework.h"
 
+uint32_t dip_all;
+uint8_t dip_1, dip_2, dip_3, dip_4, dip_5, dip_6, dip_7, dip_8;
+
 void main(void){
     initAll();
+    DIP_get(DIP_1,&dip_1);
+    printf("%d\n",dip_1);
+
     return;
     // return to BIOS scheduler
 }
@@ -13,29 +19,43 @@ void main(void){
 //lower priority?
 
 void audioHWI(void){
+    int16_t s16;
+    s16 = read_audio_sample();
+    printf("%d\n",s16);
 
-    //update switches
+    //printf("test2\n");
+    DIP_get(DIP_1,&dip_1);
+    if(dip_1){
 
-    //if s2.1
+        DIP_get(DIP_2,&dip_2);
+        if(dip_2){
+            //filters function
+            //output result
+            printf("filter\n");
+        }
+        else{
+            //buffer store function
+            //output input?
+            //run IIR with zeros?
+            printf("buffer\n");
+        }
+    }
+    else{
+        //do nothing
+        //fill buffer with zeros?
+        //run IIR with zeros?
+        //printf("nothing\n");
+    }
+    write_audio_sample(s16);
+}
 
-    //if s2.2
-    //filters function
-    //output result
-
-    //else
-    //buffer store function
-    //output input?
-    //run IIR with zeros?
-
-    //else
-    //do nothing
-    //fill buffer with zeros?
-    //run IIR with zeros?
+void LED(){
+    printf("test\n");
 }
 
 void buffer(){
-    int16_t s16;
-    s16 = read_audio_sample();
+    //int16_t s16;
+    //s16 = read_audio_sample();
 }
 
 void filters(){
