@@ -1,0 +1,12 @@
+/.metadata/
+#/.Debug/
+#/.Release/
+#/.Includes/
+/dvt/
+*.jxbrowser.userdata/
+*.project*
+#*.settings*
+*.cproject*
+*.ccsproject*
+*.xdchelp*
+*.launches*
