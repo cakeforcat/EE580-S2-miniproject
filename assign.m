@@ -1,10 +1,7 @@
-%% Init
+%% 
 fs = 8e3;
-load handel.mat
-in_fs = 8192;
-x = resample(y, fs, in_fs);
-clear y
-audiowrite("x.wav", x, fs)
+% genenerate some wgn
+x = wgn(1, 1e6, 0);
 
 %% Filter design
 lowpass_f1 = fs/6;
@@ -70,53 +67,106 @@ filterAnalyzer(lp_b_q, lp_a_q, bp_b_q, bp_a_q, hp_b_q, hp_a_q, ...
 %% Filter the signal
 % lowpass
 y_lp = filter(lp_b_q, lp_a_q, x);
-audiowrite("y_lp.wav",y_lp,fs)
 % bandpass
 y_bp = filter(bp_b_q, bp_a_q, x);
-audiowrite("y_bp.wav",y_bp,fs)
 % highpass
 y_hp = filter(hp_b_q, hp_a_q, x);
-audiowrite("y_hp.wav",y_hp,fs)
 
 %% Plot frequency content before and after filtering
-% % before
-% figure
-% subplot(3, 2, 1)
-% pwelch(x, [], [], [], fs)
-% title("Original signal")
-% % after
-% subplot(3, 2, 2)
-% pwelch(y_lp, [], [], [], fs)
-% title("Lowpass filtered signal")
-% subplot(3, 2, 4)
-% pwelch(y_bp, [], [], [], fs)
-% title("Bandpass filtered signal")
-% subplot(3, 2, 6)
-% pwelch(y_hp, [], [], [], fs)
-% title("Highpass filtered signal")
-
-fspace = linspace(0, fs, length(x));
-half = ceil(length(x)/2);
+fft_n = 2048;
+fspace = linspace(0, fs, fft_n);
 % before
-X = fft(x);
+X = fft(x, fft_n)/fft_n;
 figure
-subplot(3, 2, 1)
-plot(fspace(1:half), abs(X(1:half)))
+subplot(3, 3, 1)
+plot(fspace(1:fft_n/2), abs(X(1:fft_n/2)))
 title("Original signal")
 % after
-Y_lp = fft(y_lp);
-subplot(3, 2, 2)
-plot(fspace(1:half), abs(Y_lp(1:half)))
+
+Y_lp = fft(y_lp, fft_n);
+subplot(3, 3, 2)
+plot(fspace(1:fft_n/2), abs(Y_lp(1:fft_n/2)))
 title("Lowpass filtered signal")
-Y_bp = fft(y_bp);
-subplot(3, 2, 4)
-plot(fspace(1:half), abs(Y_bp(1:half)))
+
+Y_bp = fft(y_bp, fft_n);
+subplot(3, 3, 5)
+plot(fspace(1:fft_n/2), abs(Y_bp(1:fft_n/2)))
 title("Bandpass filtered signal")
-Y_hp = fft(y_hp);
-subplot(3, 2, 6)
-plot(fspace(1:half), abs(Y_hp(1:half)))
+
+Y_hp = fft(y_hp, fft_n);
+subplot(3, 3, 8)
+plot(fspace(1:fft_n/2), abs(Y_hp(1:fft_n/2)))
 title("Highpass filtered signal")
 
+Y_lpbp = fft(y_lp + y_bp, fft_n);
+subplot(3, 3, 3)
+plot(fspace(1:fft_n/2), abs(Y_lpbp(1:fft_n/2)))
+title("Lowpass + Bandpass filtered signal")
+
+Y_lphp = fft(y_lp + y_hp, fft_n);
+subplot(3, 3, 6)
+plot(fspace(1:fft_n/2), abs(Y_lphp(1:fft_n/2)))
+title("Lowpass + Highpass filtered signal")
+
+Y_bphp = fft(y_bp + y_hp, fft_n);
+subplot(3, 3, 9)
+plot(fspace(1:fft_n/2), abs(Y_bphp(1:fft_n/2)))
+title("Bandpass + Highpass filtered signal")
+
+Y_lpbphp = fft(y_lp + y_bp + y_hp, fft_n);
+subplot(3, 3, 7)
+plot(fspace(1:fft_n/2), abs(Y_lpbphp(1:fft_n/2)))
+title("Lowpass + Bandpass + Highpass filtered signal")
+
+%% Plot individially and save
+Y_lp_plot = figure(Visible="off");
+plot(fspace(1:fft_n/2), abs(Y_lp(1:fft_n/2)),LineWidth=2)
+title("Lowpass filtered WGN")
+xlabel("Frequency (Hz)")
+ylabel("|Magnitude|")
+saveas(Y_lp_plot, "plots/wgn/Y_lp.png")
+
+Y_bp_plot = figure(Visible="off");
+plot(fspace(1:fft_n/2), abs(Y_bp(1:fft_n/2)),LineWidth=2)
+title("Bandpass filtered WGN")
+xlabel("Frequency (Hz)")
+ylabel("|Magnitude|")
+saveas(Y_bp_plot, "plots/wgn/Y_bp.png")
+
+Y_hp_plot = figure(Visible="off");
+plot(fspace(1:fft_n/2), abs(Y_hp(1:fft_n/2)),LineWidth=2)
+title("Highpass filtered WGN")
+xlabel("Frequency (Hz)")
+ylabel("|Magnitude|")
+saveas(Y_hp_plot, "plots/wgn/Y_hp.png")
+
+Y_lpbp_plot = figure(Visible="off");
+plot(fspace(1:fft_n/2), abs(Y_lpbp(1:fft_n/2)),LineWidth=2)
+title("Lowpass + Bandpass filtered WGN")
+xlabel("Frequency (Hz)")
+ylabel("|Magnitude|")
+saveas(Y_lpbp_plot, "plots/wgn/Y_lpbp.png")
+
+Y_lphp_plot = figure(Visible="off");
+plot(fspace(1:fft_n/2), abs(Y_lphp(1:fft_n/2)),LineWidth=2)
+title("Lowpass + Highpass filtered WGN")
+xlabel("Frequency (Hz)")
+ylabel("|Magnitude|")
+saveas(Y_lphp_plot, "plots/wgn/Y_lphp.png")
+
+Y_bphp_plot = figure(Visible="off");
+plot(fspace(1:fft_n/2), abs(Y_bphp(1:fft_n/2)),LineWidth=2)
+title("Bandpass + Highpass filtered WGN")
+xlabel("Frequency (Hz)")
+ylabel("|Magnitude|")
+saveas(Y_bphp_plot, "plots/wgn/Y_bphp.png")
+
+Y_lpbphp_plot = figure(Visible="off");
+plot(fspace(1:fft_n/2), abs(Y_lpbphp(1:fft_n/2)),LineWidth=2)
+title("Lowpass + Bandpass + Highpass filtered WGN")
+xlabel("Frequency (Hz)")
+ylabel("|Magnitude|")
+saveas(Y_lpbphp_plot, "plots/wgn/Y_lpbphp.png")
 
 %% export to a header
 % lowpass
