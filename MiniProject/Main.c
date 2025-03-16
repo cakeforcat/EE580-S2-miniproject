@@ -5,21 +5,34 @@
 #include "IIR_coeffs/hp.h"
 #include "Main.h"
 
-uint32_t dip_all;
+uint32_t alldip;
 uint8_t dip_1, dip_2, dip_6, dip_7, dip_8;
+Bool dips[8];
 
 float buffer[32000];
-int ind = 0;
-float x[N_IIR_BP] = {0};
-float yb[N_IIR_BP] = {0};
-float yl[N_IIR_LP] = {0};
-float yh[N_IIR_HP] = {0};
+//float obuffer[2000];
+ulong_t ind = 0;
+float x[N_IIR_BP] = {0.0};
+float yb[N_IIR_BP];
+float yl[N_IIR_LP];
+float yh[N_IIR_HP];
+int16_t s16;
+
 
 void main(void){
-    initAll();
-    DIP_get(DIP_1,&dip_1);
-    printf("%d\n",dip_1);
 
+    int i;
+    for(i = 0;i<N_IIR_BP;i++){x[i]=0.0;yb[i]=0.0;yl[i]=0.0;yh[i]=0.0;}
+    for(i = 0;i<32000;i++){buffer[i]=0.0;}
+    //for(i = 0;i<2000;i++){obuffer[i]=0.0;}
+
+    DIP_getAll(&alldip);
+    for(i = 0;i<8;i++){
+        dips[i]= (alldip & ( 1 << i )) >> i;
+    }
+
+    initAll();
+    //DO NOT PUT CODE HERE!!!
     return;
     // return to BIOS scheduler
 }
@@ -29,66 +42,71 @@ void main(void){
 //lower priority?
 
 void audioHWI(void){
-    int16_t s16;
+
     s16 = read_audio_sample();
-    //printf("%d\n",s16);
+    ind = (ind+1)%32000;
+    //MCASP->RSLOT;
 
-    //printf("test2\n");
+    if(!dips[0]){
+        //write_audio_sample(s16);
 
-    DIP_get(DIP_1,&dip_1);
-    if(dip_1){
-
-        DIP_get(DIP_2,&dip_2);
-        if(dip_2){
+        if(!dips[1]){
             filters();
-            printf("filter\n");
+            //write_audio_sample(s16);
         }
         else{
             buffer[ind] = (float)s16;
+            write_audio_sample(s16);
             //output input?
             //run IIR with zeros?
-            printf("buffer\n");
         }
-        ind = (ind+1)%32000;
+        //write_audio_sample(s16);
     }
     else{
+        write_audio_sample(0);
         //do nothing
         //fill buffer with zeros?
         //run IIR with zeros?
-        //printf("nothing\n");
     }
+
 }
 
 void LED(){
-    printf("test\n");
+    LED_toggle(LED_2);
+    int i;
+    DIP_getAll(&alldip);
+    for(i = 0;i<8;i++){
+        dips[i]= (alldip & ( 1 << i )) >> i;
+    }
 }
+
 
 void filters(){
     update_array(x,buffer[ind]);
 
     float result = 0.0;
-    DIP_get(DIP_6,&dip_6);
-    if(dip_6){
-        result += IIR(x,b_iir_bp,yb,a_iir_bp);
+    if(!dips[5]){
+        result += IIR(a_iir_bp,yb,b_iir_bp);
     }
 
-    DIP_get(DIP_7,&dip_7);
-    if(dip_7){
-        result += IIR(x,b_iir_lp,yl,a_iir_lp);
+    if(!dips[6]){
+        result += IIR(a_iir_lp,yl,b_iir_lp);
     }
 
-    DIP_get(DIP_8,&dip_8);
-    if(dip_8){
-        result += IIR(x,b_iir_hp,yh,a_iir_hp);
+    if(!dips[7]){
+        result += IIR(a_iir_hp,yh,b_iir_hp);
     }
 
     //sum filter results
+    //printf("%d\n\n",result);
     write_audio_sample(result);
+    //obuffer[ind>>4] = result;
+    //printf("%d\n",ind<<4);
 }
 
 
 //TODO unroll
-float IIR(float x[],float b1[], float y[],float b2[]){
+float IIR(float b1[], float y[],float b2[]){
     int i;
     float out = 0.0;
     for(i = 0; i<N_IIR_BP; i++){
@@ -103,7 +121,7 @@ float IIR(float x[],float b1[], float y[],float b2[]){
 
 void update_array(float arr[], float new){
     int i = 0;
-    for(i = N_IIR_LP; i>1; i--){
+    for(i = N_IIR_LP-1; i>0; i--){
         arr[i] = arr[i-1];
     }
     arr[0] = new;

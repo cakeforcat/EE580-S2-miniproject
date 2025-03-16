@@ -30,8 +30,8 @@
 #define PINMUX_MCASP_MASK_17  0x0000ff00
 #define PINMUX_MCASP_VAL_17   0x00000800
 
-#define FS_48KHZ
-//#define FS_8KHZ
+//#define FS_48KHZ
+#define FS_8KHZ
 //#define FS_10KHZ
 //#define FS_24KHZ
 //-----------------------------------------------------------------------------

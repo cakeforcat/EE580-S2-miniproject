@@ -85,6 +85,15 @@ bios.PRD.instance("PRD1").order = 2;
 bios.PRD.instance("PRD1").period = 50;
 bios.PRD.instance("PRD1").fxn = prog.extern("LED");
 bios.PRD.instance("PRD0").period = 50;
+bios.PRD.instance("PWRM_slotFinalizer").order = 1;
+bios.PRD.instance("PRD0").order = 2;
+bios.PRD.instance("PRD1").destroy();
+bios.PRD.instance("PRD0").mode = "one-shot";
+bios.PRD.instance("PRD0").destroy();
+bios.PRD.create("PRD0");
+bios.PRD.instance("PRD0").order = 2;
+bios.PRD.instance("PRD0").period = 50;
+bios.PRD.instance("PRD0").fxn = prog.extern("LED");
 // !GRAPHICAL_CONFIG_TOOL_SCRIPT_INSERT_POINT!
 
 if (config.hasReportedError == false) {
