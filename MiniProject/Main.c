@@ -12,7 +12,8 @@ Bool dips[8];
 float buffer[32768];
 //float obuffer[2000];
 ulong_t ind = 0;
-float x[N_IIR_BP] = {0.0};
+ulong_t cbuf = 0;
+float x[N_IIR_BP];
 float yb[N_IIR_BP];
 float yl[N_IIR_LP];
 float yh[N_IIR_HP];
@@ -23,7 +24,7 @@ void main(void){
 
     int i;
     for(i = 0;i<N_IIR_BP;i++){x[i]=0.0;yb[i]=0.0;yl[i]=0.0;yh[i]=0.0;}
-    for(i = 0;i<32000;i++){buffer[i]=0.0;}
+    for(i = 0;i<32768;i++){buffer[i]=0.0;}
     //for(i = 0;i<2000;i++){obuffer[i]=0.0;}
 
     DIP_getAll(&alldip);
@@ -51,7 +52,8 @@ void audioHWI(void){
         //write_audio_sample(s16);
 
         if(!dips[1]){
-            update_array(x,buffer[ind]);
+            cbuf = (cbuf+1) & (N_IIR_BP-1);
+            x[cbuf] = buffer[ind];
 
             float result = 0.0;
             if(!dips[5]){
@@ -92,34 +94,28 @@ void audioHWI(void){
 
 void LED(){
     LED_toggle(LED_2);
-    int i;
     DIP_getAll(&alldip);
-    for(i = 0;i<8;i++){
-        dips[i]= (alldip & ( 1 << i )) >> i;
-    }
+    dips[0]= (alldip & ( 1 << 0 )) >> 0;
+    dips[1]= (alldip & ( 1 << 1 )) >> 1;
+    dips[5]= (alldip & ( 1 << 5 )) >> 5;
+    dips[6]= (alldip & ( 1 << 6 )) >> 6;
+    dips[7]= (alldip & ( 1 << 7 )) >> 7;
 }
 
 
 //TODO unroll
 float IIR(float b1[], float y[],float b2[]){
     int i;
+    int j;
     float out = 0.0;
 
-    //#pragma UNROLL(N_IIR_BP);
+    #pragma UNROLL(N_IIR_BP);
     for(i = 0; i<N_IIR_BP; i++){
+        j = (cbuf + i) & (N_IIR_BP-1);
         out += x[i]*b1[i];
         out += y[i]*b2[i];
     }
-    update_array(y,out);
+    y[(cbuf+1) & (N_IIR_BP-1)] = out;
     return out;
 }
-
-void update_array(float arr[], float new){
-    int i = 0;
-    for(i = N_IIR_LP-1; i>0; i--){
-        arr[i] = arr[i-1];
-    }
-    arr[0] = new;
-}
-
 
