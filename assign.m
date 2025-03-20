@@ -46,6 +46,10 @@ filterAnalyzer(lpfilt, bpfilt, hpfilt, ...
 [bp_b, bp_a] = tf(bpfilt);
 [hp_b, hp_a] = tf(hpfilt);
 
+% pad the BP with a 0
+bp_a = [bp_a 0];
+bp_b = [bp_b 0];
+
 % analyze the transfer functions
 filterAnalyzer(lp_b, lp_a, bp_b, bp_a, hp_b, hp_a, ...
             FilterNames=["Lowpass_tf", "Bandpass_tf", "Highpass_tf"], ...
