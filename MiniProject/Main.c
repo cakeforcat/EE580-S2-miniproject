@@ -51,7 +51,26 @@ void audioHWI(void){
         //write_audio_sample(s16);
 
         if(!dips[1]){
-            filters();
+            update_array(x,buffer[ind]);
+
+            float result = 0.0;
+            if(!dips[5]){
+                result += IIR(a_iir_bp,yb,b_iir_bp);
+            }
+
+            if(!dips[6]){
+                result += IIR(a_iir_lp,yl,b_iir_lp);
+            }
+
+            if(!dips[7]){
+                result += IIR(a_iir_hp,yh,b_iir_hp);
+            }
+
+            //sum filter results
+            //printf("%d\n\n",result);
+            write_audio_sample(result);
+            //obuffer[ind>>4] = result;
+            //printf("%d\n",ind<<4);
             //write_audio_sample(s16);
         }
         else{
@@ -81,38 +100,14 @@ void LED(){
 }
 
 
-void filters(){
-    update_array(x,buffer[ind]);
-
-    float result = 0.0;
-    if(!dips[5]){
-        result += IIR(a_iir_bp,yb,b_iir_bp);
-    }
-
-    if(!dips[6]){
-        result += IIR(a_iir_lp,yl,b_iir_lp);
-    }
-
-    if(!dips[7]){
-        result += IIR(a_iir_hp,yh,b_iir_hp);
-    }
-
-    //sum filter results
-    //printf("%d\n\n",result);
-    write_audio_sample(result);
-    //obuffer[ind>>4] = result;
-    //printf("%d\n",ind<<4);
-}
-
-
 //TODO unroll
 float IIR(float b1[], float y[],float b2[]){
     int i;
     float out = 0.0;
+
+    //#pragma UNROLL(N_IIR_BP);
     for(i = 0; i<N_IIR_BP; i++){
         out += x[i]*b1[i];
-    }
-    for(i = 0;i<N_IIR_BP; i++){
         out += y[i]*b2[i];
     }
     update_array(y,out);
