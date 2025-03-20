@@ -9,7 +9,7 @@ uint32_t alldip;
 uint8_t dip_1, dip_2, dip_6, dip_7, dip_8;
 Bool dips[8];
 
-float buffer[32000];
+float buffer[32768];
 //float obuffer[2000];
 ulong_t ind = 0;
 float x[N_IIR_BP] = {0.0};
@@ -44,7 +44,7 @@ void main(void){
 void audioHWI(void){
 
     s16 = read_audio_sample();
-    ind = (ind+1)%32000;
+    ind = (ind+1) & (32767);
     //MCASP->RSLOT;
 
     if(!dips[0]){
