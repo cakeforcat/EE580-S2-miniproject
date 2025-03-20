@@ -1,6 +1,6 @@
 /.metadata/
 #/.Debug/
-#/.Release/
+*/Release/*
 #/.Includes/
 /dvt/
 *.jxbrowser.userdata/
