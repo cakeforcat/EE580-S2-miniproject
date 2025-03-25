@@ -12,7 +12,7 @@ Bool dips[8];
 float buffer[32768];
 //float obuffer[2000];
 ulong_t ind = 0;
-ulong_t cbuf = 0;
+int16_t cbuf = 0;
 float x[N_IIR_BP];
 float yb[N_IIR_BP];
 float yl[N_IIR_LP];
@@ -29,7 +29,7 @@ void main(void){
 
     DIP_getAll(&alldip);
     for(i = 0;i<8;i++){
-        dips[i]= (alldip & ( 1 << i )) >> i;
+        dips[i]= 1;
     }
 
     initAll();
@@ -70,14 +70,14 @@ void audioHWI(void){
 
             //sum filter results
             //printf("%d\n\n",result);
-            write_audio_sample(result);
+            write_audio_sample((int16_t)result);
             //obuffer[ind>>4] = result;
             //printf("%d\n",ind<<4);
             //write_audio_sample(s16);
         }
         else{
-            buffer[ind] = (float)s16;
             write_audio_sample(s16);
+            buffer[ind] = (float)s16;
             //output input?
             //run IIR with zeros?
         }
@@ -104,18 +104,19 @@ void LED(){
 
 
 //TODO unroll
-float IIR(float b1[], float y[],float b2[]){
+float IIR(float a[], float y[],float b[]){
     int i;
-    int j;
-    float out = 0.0;
-
-    #pragma UNROLL(N_IIR_BP);
-    for(i = 0; i<N_IIR_BP; i++){
-        j = (cbuf + i) & (N_IIR_BP-1);
-        out += x[i]*b1[i];
-        out += y[i]*b2[i];
+    int16_t j;
+    float out;
+    out = 0.0;
+    out += x[cbuf]*b[0];
+    #pragma UNROLL(N_IIR_BP-1);
+    for(i = 1; i<N_IIR_BP; i++){
+        j = (cbuf - i) & (N_IIR_BP-1);
+        out += x[j]*b[i];
+        out -= y[j]*a[i];
     }
-    y[(cbuf+1) & (N_IIR_BP-1)] = out;
+    y[cbuf] = out;
     return out;
 }
 
