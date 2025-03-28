@@ -65,11 +65,11 @@ void audioHWI(void){
 
                 float result = 0.0;
                 if(!dips[5]){
-                    result += IIR(a_iir_bp,yb,b_iir_bp);
+                    result += IIR(a_iir_lp,yb,b_iir_lp);
                 }
 
                 if(!dips[6]){
-                    result += IIR(a_iir_lp,yl,b_iir_lp);
+                    result += IIR(a_iir_bp,yl,b_iir_bp);
                 }
 
                 if(!dips[7]){
