@@ -48,26 +48,26 @@ void main(void){
 //lower priority?
 
 void audioHWI(void){
-    start_time = CLK_gethtime();
+
     s16 = read_audio_sample();
     if (MCASP->RSLOT){
-        ind = (ind+1) & (32000);
+        ind = (ind+1) % (32000);
 
         if(!dips[0]){
             //write_audio_sample(s16);
 
         if(!dips[1]){
-
+            start_time = CLK_gethtime();
 
             update_array(x,buffer[ind]);
 
                 float result = 0.0;
                 if(!dips[5]){
-                    result += IIR(a_iir_bp,yb,b_iir_bp);
+                    result += IIR(a_iir_lp,yb,b_iir_lp);
                 }
 
                 if(!dips[6]){
-                    result += IIR(a_iir_lp,yl,b_iir_lp);
+                    result += IIR(a_iir_bp,yl,b_iir_bp);
                 }
 
                 if(!dips[7]){
@@ -80,6 +80,11 @@ void audioHWI(void){
                 //obuffer[ind>>4] = result;
                 //printf("%d\n",ind<<4);
                 //write_audio_sample(s16);
+                end_time = CLK_gethtime();
+                if (start_time>end_time) duration = start_time - end_time;
+                else duration =  end_time-start_time;
+
+                LOG_printf(&trace, "ms: %d --- ticks: %d", duration/CLK_countspms(), duration);
             }
             else{
                 write_audio_sample(s16);
@@ -100,11 +105,7 @@ void audioHWI(void){
         write_audio_sample(0);
     }
 
-    end_time = CLK_gethtime();
-    if (start_time>end_time) duration = start_time - end_time;
-    else duration =  end_time-start_time;
 
-    LOG_printf(&trace, "ms: %d --- ticks: %d", duration/CLK_countspms(), duration);
 }
 
 void DIP_UPDATE(){
@@ -158,7 +159,7 @@ float IIR(float a[], float y[],float b[]){
     out += x[0]*b[0];
     for(i = 1; i<N_IIR_BP; i++){
         out += x[i]*b[i];
-        out -= y[i]*a[i];
+        out -= y[i-1]*a[i];
     }
     update_array(y,out);
     return out;
