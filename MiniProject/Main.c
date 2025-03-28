@@ -13,7 +13,7 @@ Bool toggle_20[2];  // [0] -> LED1, [1] -> LED2
 Bool toggle_6;      // only LED2
 Bool toggle_2;      // only LED1
 
-float buffer[32768];
+float buffer[32000];
 //float obuffer[2000];
 ulong_t ind = 0;
 float x[N_IIR_BP] = {0.0};
@@ -48,8 +48,7 @@ void main(void){
 void audioHWI(void){
     s16 = read_audio_sample();
     if (MCASP->RSLOT){
-        ind = (ind+1) & (32767);
-        //MCASP->RSLOT;
+        ind = (ind+1) & (32000);
 
         if(!dips[0]){
             //write_audio_sample(s16);
@@ -146,11 +145,10 @@ void LED_2HZ(){
 float IIR(float a[], float y[],float b[]){
     int i;
     float out = 0.0;
-
-    //#pragma UNROLL(N_IIR_BP);
-    for(i = 0; i<N_IIR_BP; i++){
-        out += x[i]*b1[i];
-        out += y[i]*b2[i];
+    out += x[0]*b[0];
+    for(i = 1; i<N_IIR_BP; i++){
+        out += x[i]*b[i];
+        out -= y[i]*a[i];
     }
     update_array(y,out);
     return out;
