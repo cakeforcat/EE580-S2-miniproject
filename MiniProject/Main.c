@@ -14,8 +14,9 @@ Bool toggle_6;      // only LED2
 Bool toggle_2;      // only LED1
 
 float buffer[32768];
-//float obuffer[2000];
+//float obuffer[4096];
 ulong_t ind = 0;
+//ulong_t ind2 = 0;
 int16_t cbuf = 0;
 float x[N_IIR_BP];
 float yb[N_IIR_BP];
@@ -29,7 +30,7 @@ void main(void){
     int i;
     for(i = 0;i<N_IIR_BP;i++){x[i]=0.0;yb[i]=0.0;yl[i]=0.0;yh[i]=0.0;}
     for(i = 0;i<32768;i++){buffer[i]=0.0;}
-    //for(i = 0;i<2000;i++){obuffer[i]=0.0;}
+    //for(i = 0;i<4096;i++){obuffer[i]=0.0;}
 
     DIP_getAll(&alldip);
     for(i = 0;i<8;i++){
@@ -50,6 +51,7 @@ void audioHWI(void){
     s16 = read_audio_sample();
     if (MCASP->RSLOT){
         ind = (ind+1) & (32767);
+        //ind2 = (ind) & (4095);
         //MCASP->RSLOT;
 
         if(!dips[0]){
@@ -75,7 +77,7 @@ void audioHWI(void){
                 //sum filter results
                 //printf("%d\n\n",result);
                 write_audio_sample((int16_t)result);
-                //obuffer[ind>>4] = result;
+                //obuffer[ind2] = result;
                 //printf("%d\n",ind<<4);
                 //write_audio_sample(s16);
             }
