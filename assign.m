@@ -1,9 +1,11 @@
 %% 
 fs = 8e3;
 % genenerate some wgn
-x = wgn(1, 1e6, 0);
+x = single(wgn(1, 1e6, 2^32, 1, 11,'linear'));
 
 %% Filter design
+analysis = true;
+
 lowpass_f1 = fs/6;
 
 bandpass_f1 = fs/6;
@@ -36,11 +38,12 @@ hpfilt = designfilt("highpassiir", ...
     SampleRate=fs);
 
 % analyze the filters
+if analysis
 filterAnalyzer(lpfilt, bpfilt, hpfilt, ...
             FilterNames=["Lowpass", "Bandpass", "Highpass"], ...
             Analysis="magnitude", ...
             SampleRates=[fs, fs, fs]);
-
+end
 % get transfer functions
 [lp_b, lp_a] = tf(lpfilt);
 [bp_b, bp_a] = tf(bpfilt);
@@ -51,10 +54,11 @@ bp_a = [bp_a 0];
 bp_b = [bp_b 0];
 
 % analyze the transfer functions
+if analysis
 filterAnalyzer(lp_b, lp_a, bp_b, bp_a, hp_b, hp_a, ...
             FilterNames=["Lowpass_tf", "Bandpass_tf", "Highpass_tf"], ...
             SampleRates=[fs, fs, fs]);
-
+end
 % quantize the transfer functions
 lp_b_q = single(lp_b);
 lp_a_q = single(lp_a);
@@ -64,10 +68,11 @@ hp_b_q = single(hp_b);
 hp_a_q = single(hp_a);
 
 % analyze quantization
+if analysis
 filterAnalyzer(lp_b_q, lp_a_q, bp_b_q, bp_a_q, hp_b_q, hp_a_q, ...
             FilterNames=["Lowpass_tf_q", "Bandpass_tf_q", "Highpass_tf_q"], ...
             SampleRates=[fs, fs, fs]);
-
+end
 %% Filter the signal
 % lowpass
 y_lp = filter(lp_b_q, lp_a_q, x);
