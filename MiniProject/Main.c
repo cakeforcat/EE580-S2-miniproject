@@ -98,11 +98,10 @@ void audioHWI(void){
 
 void DIP_UPDATE(){
     DIP_getAll(&alldip);
-    dips[0]= (alldip & ( 1 << 0 )) >> 0;
-    dips[1]= (alldip & ( 1 << 1 )) >> 1;
-    dips[5]= (alldip & ( 1 << 5 )) >> 5;
-    dips[6]= (alldip & ( 1 << 6 )) >> 6;
-    dips[7]= (alldip & ( 1 << 7 )) >> 7;
+    int i = 0;
+    for(i = 0;i<8;i++){
+        dips[i]= (alldip & ( 1 << i )) >> i;
+    }
     if (!dips[0]){
         toggle_20[0]=1;
         toggle_20[1]=1;
