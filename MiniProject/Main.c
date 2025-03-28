@@ -4,6 +4,7 @@
 #include "IIR_coeffs/lp.h"
 #include "IIR_coeffs/hp.h"
 #include "Main.h"
+#include <clk.h>
 
 uint32_t alldip;
 uint8_t dip_1, dip_2, dip_6, dip_7, dip_8;
@@ -22,6 +23,7 @@ float yl[N_IIR_LP];
 float yh[N_IIR_HP];
 int16_t s16;
 
+LgUns start_time, end_time, duration;
 
 void main(void){
 
@@ -46,6 +48,7 @@ void main(void){
 //lower priority?
 
 void audioHWI(void){
+    start_time = CLK_gethtime();
     s16 = read_audio_sample();
     if (MCASP->RSLOT){
         ind = (ind+1) & (32000);
@@ -54,6 +57,8 @@ void audioHWI(void){
             //write_audio_sample(s16);
 
         if(!dips[1]){
+
+
             update_array(x,buffer[ind]);
 
                 float result = 0.0;
@@ -94,6 +99,12 @@ void audioHWI(void){
     else {
         write_audio_sample(0);
     }
+
+    end_time = CLK_gethtime();
+    if (start_time>end_time) duration = start_time - end_time;
+    else duration =  end_time-start_time;
+
+    LOG_printf(&trace, "ms: %d --- ticks: %d", duration/CLK_countspms(), duration);
 }
 
 void DIP_UPDATE(){
