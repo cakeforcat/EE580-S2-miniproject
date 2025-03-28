@@ -128,6 +128,13 @@ plot(fspace(1:fft_n/2), abs(Y_lpbphp(1:fft_n/2)))
 title("Lowpass + Bandpass + Highpass filtered signal")
 
 %% Plot individially and save
+X_wgn = figure(Visible="off");
+plot(fspace(1:fft_n/2), abs(X(1:fft_n/2)),LineWidth=2)
+title("Input WGN")
+xlabel("Frequency (Hz)")
+ylabel("|Magnitude|")
+saveas(X_wgn, "plots/wgn/X_wgn.png")
+
 Y_lp_plot = figure(Visible="off");
 plot(fspace(1:fft_n/2), abs(Y_lp(1:fft_n/2)),LineWidth=2)
 title("Lowpass filtered WGN")
