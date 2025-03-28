@@ -4,6 +4,7 @@
 #include "IIR_coeffs/lp.h"
 #include "IIR_coeffs/hp.h"
 #include "Main.h"
+#include <clk.h>
 
 uint32_t alldip;
 uint8_t dip_1, dip_2, dip_6, dip_7, dip_8;
@@ -24,6 +25,7 @@ float yl[N_IIR_LP];
 float yh[N_IIR_HP];
 int16_t s16;
 
+LgUns start_time, end_time, duration;
 
 void main(void){
 
@@ -56,7 +58,7 @@ void audioHWI(void){
 
         if(!dips[0]){
             //write_audio_sample(s16);
-
+            start_time = CLK_gethtime();
             if(!dips[1]){
                 cbuf = (cbuf+1) & (N_IIR_BP-1);
                 x[cbuf] = buffer[ind];
@@ -80,6 +82,12 @@ void audioHWI(void){
                 //obuffer[ind2] = result;
                 //printf("%d\n",ind<<4);
                 //write_audio_sample(s16);
+
+                end_time = CLK_gethtime();
+                if (start_time>end_time) duration = start_time - end_time;
+                else duration =  end_time-start_time;
+
+                LOG_printf(&trace, "ms: %d --- ticks: %d", duration/CLK_countspms(), duration);
             }
             else{
                 write_audio_sample(s16);
