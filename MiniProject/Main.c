@@ -98,11 +98,11 @@ void audioHWI(void){
 
                 //add outputs from IIR filters to output
                 //filters used based on switch states
-                //switch S2:7
+                //switch S2:6
                 if(!dips[5]){
                     result += IIR(a_iir_lp,yb,b_iir_lp);
                 }
-                //switch S2:6
+                //switch S2:7
                 if(!dips[6]){
                     result += IIR(a_iir_bp,yl,b_iir_bp);
                 }
